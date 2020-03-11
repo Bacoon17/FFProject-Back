@@ -46,9 +46,17 @@ async function routes(fastify, options) {
     fastify.post('/add', async (req, reply) => {
 
         // VERIF AUTH
-
         // VERIF DONNEES
-        let ajouts = JSON.parse(req.body);
+        console.log(req.body);
+        console.log("1")
+        let ajouts;
+        
+        // try {
+        //     ajouts = JSON.parse(req.body);
+        // } catch (error) {
+            ajouts = req.body;
+        // }
+
         var insert = [];
         for (const ajout of ajouts) {
             insert.push(Object.keys(ajout).map(function (v) { return ajout[v]; }))
@@ -58,8 +66,7 @@ async function routes(fastify, options) {
         // ENVOI DONNEES
         const connection = await fastify.mysql.getConnection();
         try {
-            console.log(insert);
-            var sql = 'INSERT INTO characters (`name`, `episode`, `cristal`, `weapon`, `voice`) VALUES ?'
+            let sql = 'INSERT INTO characters (`name`, `episode`, `cristal`, `weapon`, `voice`) VALUES ?'
             let res= await connection.query(
                 sql,
                 [insert]
@@ -75,7 +82,27 @@ async function routes(fastify, options) {
 
     })
 
+    fastify.delete('/delete/:id', async (req, reply) => {
 
+        const connection = await fastify.mysql.getConnection();
+
+        try {
+            let sql = 'DELETE FROM characters WHERE id=?'
+            let res = await connection.query(
+                sql,
+                [req.params.id]
+            );
+            console.log('Ca a marché')
+            return reply.status(204).send();
+        }
+        catch (error) {
+            return error;
+        }
+        finally {
+            connection.release();
+        }
+
+    })
 
 };
 
